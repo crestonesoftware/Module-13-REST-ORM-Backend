@@ -14,7 +14,7 @@ Category.init(
       unique: true,
       validate: { isNull: false },
     },
-    name: {
+    category_name: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
