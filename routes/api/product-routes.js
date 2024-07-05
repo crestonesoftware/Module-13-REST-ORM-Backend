@@ -5,9 +5,8 @@ const { Product, Category, Tag, ProductTag } = require("../../models");
 const type = "products";
 // get all products
 router.get("/", (req, res) => {
-  const scope = "all";
-
   // find all products
+  const scope = "all";
   res.json(`${req.method} ${scope} ${type}`);
   // be sure to include its associated Category and Tag data
 });
@@ -15,6 +14,8 @@ router.get("/", (req, res) => {
 // get one product
 router.get("/:id", (req, res) => {
   // find a single product by its `id`
+  const scope = "single";
+  res.json(`${req.method} ${scope} ${type}`);
   // be sure to include its associated Category and Tag data
 });
 
@@ -28,6 +29,9 @@ router.post("/", (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
+  const scope = "create new";
+  res.json(`${req.method} ${scope} ${type}`);
+
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
@@ -53,6 +57,8 @@ router.post("/", (req, res) => {
 // update product
 router.put("/:id", (req, res) => {
   // update product data
+  const scope = "update by id";
+  res.json(`${req.method} ${scope} ${type}`);
   Product.update(req.body, {
     where: {
       id: req.params.id,
@@ -96,6 +102,8 @@ router.put("/:id", (req, res) => {
 
 router.delete("/:id", (req, res) => {
   // delete one product by its `id` value
+  const scope = "single by id"; //
+  res.json(`${req.method} ${scope} ${type}`);
 });
 
 module.exports = router;
