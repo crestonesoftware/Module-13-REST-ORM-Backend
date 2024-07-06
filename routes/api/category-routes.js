@@ -19,15 +19,33 @@ router.get("/", async (req, res) => {
   }
 });
 
-// get a Category by its `id` value
+// get products associated to the Category
+async function getProductsInCategory(categoryID) {
+  const productsInCategory = await Product.findAll({
+    where: {
+      category_id: categoryID,
+    },
+    attributes: { exclude: "category_id", include: "id" },
+  });
+
+  return productsInCategory;
+}
+
+// get a Category by its id value, including the associated Product records
 router.get("/:id", async (req, res) => {
   try {
     const typeData = await TheType.findByPk(req.params.id);
+
     if (!typeData)
       res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
-    else res.status(200).json(typeData);
-    // be sure to include its associated Products
-    // TODO include products
+    else {
+      const productsInCategory = await getProductsInCategory(
+        typeData.getDataValue("id")
+      );
+      typeData.setDataValue("products", productsInCategory);
+
+      res.status(200).json(typeData);
+    }
   } catch (error) {
     console.log(`Error when getting ${typePlural}: ${error.name}
       ${error}`);
