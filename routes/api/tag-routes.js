@@ -58,10 +58,25 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
-  // update a tag's name by its `id` value
-  const scope = "update by ID";
-  res.json(`${req.method} ${scope} ${type}`);
+// update a tag's name by its `id` value
+router.put("/:id", async (req, res) => {
+  const keyProperty = req.body.tag_name;
+  try {
+    const typeData = await TheType.update(
+      {
+        tag_name: keyProperty,
+      },
+      {
+        where: { id: req.params.id },
+      }
+    );
+    res.status(200).json(typeData);
+  } catch (error) {
+    if (!utils.handleKnownErrors(req, res, type, keyProperty, error))
+      res.status(500).json(error);
+    console.log(`Error when updating ${type}: ${error.name}
+      ${error}`);
+  }
 });
 
 // delete a tag by its `id` value
