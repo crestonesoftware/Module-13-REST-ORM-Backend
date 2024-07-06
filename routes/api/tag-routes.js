@@ -1,10 +1,11 @@
 const router = require("express").Router();
+const utils = require("./utils.js");
 const { Tag, Product, ProductTag } = require("../../models");
 
 // The `/api/tags` endpoint
-const type = "Product";
-const typePlural = "Products";
-const TheType = Product;
+const type = "Tag";
+const typePlural = "Tags";
+const TheType = Tag;
 
 // find all tags
 
@@ -46,10 +47,21 @@ router.put("/:id", (req, res) => {
   res.json(`${req.method} ${scope} ${type}`);
 });
 
-router.delete("/:id", (req, res) => {
-  // delete on tag by its `id` value
-  const scope = "";
-  res.json(`${req.method} ${scope} ${type}`);
+// delete a tag by its `id` value
+router.delete("/:id", async (req, res) => {
+  try {
+    const typeData = await TheType.destroy({
+      where: { id: req.params.id },
+    });
+    if (!typeData)
+      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+    else res.status(200).json(typeData);
+  } catch (error) {
+    if (!utils.handleKnownErrors(req, res, type, null, error))
+      res.status(500).json(error);
+    console.log(`Error when deleting ${type}: ${error.name}
+      ${error}`);
+  }
 });
 
 module.exports = router;
