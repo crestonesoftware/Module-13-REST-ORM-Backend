@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const utils = require("./utils.js");
 const { Product, Category, Tag, ProductTag } = require("../../models");
 
 // The `/api/products` endpoint
@@ -114,10 +115,21 @@ router.put("/:id", (req, res) => {
     });
 });
 
-router.delete("/:id", (req, res) => {
-  // delete one product by its `id` value
-  const scope = "single by id"; //
-  res.json(`${req.method} ${scope} ${type}`);
+router.delete("/:id", async (req, res) => {
+  // delete a category by its `id` value
+  try {
+    const typeData = await TheType.destroy({
+      where: { id: req.params.id },
+    });
+    if (!typeData)
+      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+    else res.status(200).json(typeData);
+  } catch (error) {
+    if (!utils.handleKnownErrors(req, res, type, error))
+      res.status(500).json(error);
+    console.log(`Error when deleting ${type}: ${error.name}
+      ${error}`);
+  }
 });
 
 module.exports = router;
