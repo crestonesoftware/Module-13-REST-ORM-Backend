@@ -18,9 +18,6 @@ Tag.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      validate: {
-        isAlphanumeric: true,
-      },
     },
   },
   {
