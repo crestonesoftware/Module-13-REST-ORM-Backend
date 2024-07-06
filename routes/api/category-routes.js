@@ -70,10 +70,27 @@ router.put("/:id", async (req, res) => {
   res.status(200).json(category);
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   // delete a category by its `id` value
-  const scope = "delete";
-  res.json(`${req.method} ${scope} ${type}`);
+  try {
+    const category = await Category.destroy({
+      where: { id: req.params.id },
+    });
+    if (!category)
+      res.status(404).json(`No Category esists with id [${req.params.id}]`);
+    else res.status(200).json(category);
+    // be sure to include its associated Products
+    // TODO include products
+  } catch (error) {
+    if (error.name == "SequelizeForeignKeyConstraintError") {
+      console.log(`Foreign Key Constraint error when deleting Category: ${req.params.id}. 
+    Failed SQL: ${error.parent.sql}
+    ${error}`);
+    } else
+      console.log(`Error when deleting Category: ${error.name}
+      ${error}`);
+    res.status(500).json(error);
+  }
 });
 
 module.exports = router;
