@@ -46,24 +46,23 @@ router.post("/", async (req, res) => {
     }
   */
   try {
-    Product.create(req.body)
-      .then((product) => {
-        // if product tags are provided, create pairings to bulk create in the ProductTag model
-        if (req.body.tagIds.length) {
-          const productTagIdArr = req.body.tagIds.map((tag_id) => {
-            return {
-              product_id: product.id,
-              tag_id,
-            };
-          });
-          return ProductTag.bulkCreate(productTagIdArr);
-        }
-        // else no product tags. Just respond
-        res.status(200).json(product);
-      })
-      .then((productTagIds) => res.status(200).json(productTagIds));
+    const product = await Product.create(req.body);
+    // no product tags. Just respond
+    if (!req.body.tagIds.length) {
+      res.status(200).json(product);
+      return;
+    }
+    // product tags are provided. Create pairings to bulk create in the ProductTag model
+    const productTagIdArr = await req.body.tagIds.map((tag_id) => {
+      return {
+        product_id: product.id,
+        tag_id,
+      };
+    });
+    const productTagIds = await ProductTag.bulkCreate(productTagIdArr);
+    res.status(200).json(productTagIds);
   } catch (error) {
-    if (!utils.handleKnownErrors(req, res, type, error))
+    if (!utils.handleKnownErrors(req, res, type, req.body.product_name, error))
       //unknown error
       res
         .status(500)
@@ -129,7 +128,7 @@ router.delete("/:id", async (req, res) => {
       res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
     else res.status(200).json(typeData);
   } catch (error) {
-    if (!utils.handleKnownErrors(req, res, type, error))
+    if (!utils.handleKnownErrors(req, res, type, req.body.category_name, error))
       res.status(500).json(error);
     console.log(`Error when deleting ${type}: ${error.name}
       ${error}`);
