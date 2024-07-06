@@ -19,11 +19,19 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", (req, res) => {
-  // find a single tag by its `id`
-  // be sure to include its associated Product data
-  const scope = "single by ID";
-  res.json(`${req.method} ${scope} ${type}`);
+// find a single tag by its `id`
+// be sure to include its associated Product data
+router.get("/:id", async (req, res) => {
+  try {
+    const typeData = await TheType.findByPk(req.params.id);
+    if (!typeData)
+      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+    else res.status(200).json(typeData);
+  } catch (error) {
+    console.log(`Error when getting ${typePlural}: ${error.name}
+      ${error}`);
+    res.status(500).json(error);
+  }
 });
 
 router.post("/", (req, res) => {
