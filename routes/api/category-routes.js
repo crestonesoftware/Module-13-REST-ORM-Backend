@@ -24,6 +24,7 @@ router.get("/:id", async (req, res) => {
       res.status(404).json(`No Category esists with id [${req.params.id}]`);
     else res.status(200).json(category);
     // be sure to include its associated Products
+    // TODO include products
   } catch (error) {
     console.log(`Error when getting Categories: ${error.name}
       ${error}`);
@@ -56,10 +57,17 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   // update a category by its `id` value
-  const scope = "update by ID";
-  res.json(`${req.method} ${scope} ${type}`);
+  const category = await Category.update(
+    {
+      category_name: req.body.category_name,
+    },
+    {
+      where: { id: req.params.id },
+    }
+  );
+  res.status(200).json(category);
 });
 
 router.delete("/:id", (req, res) => {
