@@ -13,6 +13,13 @@ const UTILS = {
           `Error: when attempting to create ${type}: [${req.body.category_name}]. A ${type} with that ${error.errors[0].path} already exists`
         );
       return true;
+    } else if (error.name == "SequelizeForeignKeyConstraintError") {
+      res
+        .status(400)
+        .json(
+          `Foreign Key Constraint error when deleting ${type}: [${req.params.id}]. ${error.message}`
+        );
+      return true;
     }
   },
 };

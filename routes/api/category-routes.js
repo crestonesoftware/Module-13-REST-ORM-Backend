@@ -3,30 +3,32 @@ const utils = require("./utils.js");
 const { Category, Product } = require("../../models");
 
 // The `/api/categories` endpoint
-const type = "categories";
+const type = "Category";
+const typePlural = "Categories";
+const TheType = Category;
 
-// find all categories
+// find all
 router.get("/", async (req, res) => {
   try {
-    const categoryData = await Category.findAll();
-    res.status(200).json(categoryData);
+    const typeData = await TheType.findAll();
+    res.status(200).json(typeData);
   } catch (error) {
-    console.log(`Error when getting Categories: ${error.name}`);
+    console.log(`Error when getting ${typePlural}: ${error.name}`);
     res.status(500).json(error);
   }
 });
 
 router.get("/:id", async (req, res) => {
-  // find one category by its `id` value
+  // find one by its `id` value
   try {
-    const category = await Category.findByPk(req.params.id);
-    if (!category)
-      res.status(404).json(`No Category esists with id [${req.params.id}]`);
-    else res.status(200).json(category);
+    const typeData = await TheType.findByPk(req.params.id);
+    if (!typeData)
+      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+    else res.status(200).json(typeData);
     // be sure to include its associated Products
     // TODO include products
   } catch (error) {
-    console.log(`Error when getting Categories: ${error.name}
+    console.log(`Error when getting ${typePlural}: ${error.name}
       ${error}`);
     res.status(500).json(error);
   }
@@ -42,11 +44,10 @@ router.post("/", async (req, res) => {
     });
     if (!category)
       throw new error(
-        `Failure when attempting to create Category [${req.body.category_name}]`
+        `Failure when attempting to create ${type} [${req.body.category_name}]`
       );
     else res.status(200).json(category);
   } catch (error) {
-    const type = "Category";
     if (!utils.handleKnownErrors(req, res, type, error))
       //unknown error
       res
@@ -58,7 +59,7 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/:id", async (req, res) => {
-  // update a category by its `id` value
+  // updates by `id` value
   const category = await Category.update(
     {
       category_name: req.body.category_name,
@@ -77,19 +78,13 @@ router.delete("/:id", async (req, res) => {
       where: { id: req.params.id },
     });
     if (!category)
-      res.status(404).json(`No Category esists with id [${req.params.id}]`);
+      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
     else res.status(200).json(category);
-    // be sure to include its associated Products
-    // TODO include products
   } catch (error) {
-    if (error.name == "SequelizeForeignKeyConstraintError") {
-      console.log(`Foreign Key Constraint error when deleting Category: ${req.params.id}. 
-    Failed SQL: ${error.parent.sql}
-    ${error}`);
-    } else
-      console.log(`Error when deleting Category: ${error.name}
+    if (!utils.handleKnownErrors(req, res, type, error))
+      res.status(500).json(error);
+    console.log(`Error when deleting ${type}: ${error.name}
       ${error}`);
-    res.status(500).json(error);
   }
 });
 
