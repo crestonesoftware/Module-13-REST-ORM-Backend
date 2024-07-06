@@ -7,19 +7,9 @@ const type = "Category";
 const typePlural = "Categories";
 const TheType = Category;
 
-// find all
-router.get("/", async (req, res) => {
-  try {
-    const typeData = await TheType.findAll();
-    res.status(200).json(typeData);
-  } catch (error) {
-    // the only likely error scenario here is a server problem
-    console.log(`Error when getting ${typePlural}: ${error.name}`);
-    res.status(500).json(error);
-  }
-});
+// UTILITY FUNCTIONS
 
-// get products associated to the Category
+// gets the Products associated to a Category by Category ID
 async function getProductsInCategory(categoryID) {
   const productsInCategory = await Product.findAll({
     where: {
@@ -31,6 +21,33 @@ async function getProductsInCategory(categoryID) {
   return productsInCategory;
 }
 
+// adds the associated products into the Category JSON object
+async function addAssociatedProducts(typeData) {
+  const productsInCategory = await getProductsInCategory(
+    typeData.getDataValue("id")
+  );
+  typeData.setDataValue("products", productsInCategory);
+}
+
+// API ROUTES
+
+// get all Categories
+router.get("/", async (req, res) => {
+  try {
+    const typeData = await TheType.findAll();
+    // add the Products in this Category
+    for (let ii = 0; ii < typeData.length; ii++)
+      await addAssociatedProducts(typeData[ii]);
+
+    res.status(200).json(typeData);
+  } catch (error) {
+    // the only likely error scenario here is a server problem
+    console.log(`Error when getting ${typePlural}: ${error.name}`);
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
 // get a Category by its id value, including the associated Product records
 router.get("/:id", async (req, res) => {
   try {
@@ -39,10 +56,7 @@ router.get("/:id", async (req, res) => {
     if (!typeData)
       res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
     else {
-      const productsInCategory = await getProductsInCategory(
-        typeData.getDataValue("id")
-      );
-      typeData.setDataValue("products", productsInCategory);
+      await addAssociatedProducts(typeData);
 
       res.status(200).json(typeData);
     }
