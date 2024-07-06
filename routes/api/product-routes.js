@@ -2,21 +2,35 @@ const router = require("express").Router();
 const { Product, Category, Tag, ProductTag } = require("../../models");
 
 // The `/api/products` endpoint
-const type = "products";
-// get all products
-router.get("/", (req, res) => {
-  // find all products
-  const scope = "all";
-  res.json(`${req.method} ${scope} ${type}`);
-  // be sure to include its associated Category and Tag data
+
+const type = "Product";
+const typePlural = "Products";
+const TheType = Product;
+
+// find all
+router.get("/", async (req, res) => {
+  try {
+    const typeData = await TheType.findAll();
+    res.status(200).json(typeData);
+  } catch (error) {
+    console.log(`Error when getting ${typePlural}: ${error.name}`);
+    res.status(500).json(error);
+  }
 });
 
-// get one product
-router.get("/:id", (req, res) => {
-  // find a single product by its `id`
-  const scope = "single";
-  res.json(`${req.method} ${scope} ${type}`);
-  // be sure to include its associated Category and Tag data
+// get one product by ID
+router.get("/:id", async (req, res) => {
+  // TODO be sure to include its associated Category and Tag data
+  try {
+    const typeData = await TheType.findByPk(req.params.id);
+    if (!typeData)
+      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+    else res.status(200).json(typeData);
+  } catch (error) {
+    console.log(`Error when getting ${typePlural}: ${error.name}
+      ${error}`);
+    res.status(500).json(error);
+  }
 });
 
 // create new product
