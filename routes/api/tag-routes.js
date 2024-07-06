@@ -35,10 +35,27 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", (req, res) => {
-  // create a new tag
-  const scope = "create";
-  res.json(`${req.method} ${scope} ${type}`);
+// create a new tag
+router.post("/", async (req, res) => {
+  const keyValue = req.body.tag_name;
+  try {
+    const typeData = await TheType.create({
+      tag_name: keyValue,
+    });
+    if (!typeData)
+      throw new error(
+        `Failure when attempting to create ${type} [${keyValue}]`
+      );
+    else res.status(200).json(typeData);
+  } catch (error) {
+    if (!utils.handleKnownErrors(req, res, type, keyValue, error))
+      //unknown error
+      res
+        .status(500)
+        .json(
+          `Failure when attempting to create ${type} [${keyValue}]: ${error.message} ${error}`
+        );
+  }
 });
 
 router.put("/:id", (req, res) => {
