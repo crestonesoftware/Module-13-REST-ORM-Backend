@@ -8,7 +8,7 @@ const type = "Product";
 const typePlural = "Products";
 const TheType = Product;
 
-// find all
+// get all
 router.get("/", async (req, res) => {
   try {
     const typeData = await TheType.findAll();
@@ -113,13 +113,17 @@ router.put("/:id", (req, res) => {
       return res.json(product);
     })
     .catch((err) => {
-      // console.log(err);
-      res.status(400).json(err);
+      if (
+        !utils.handleKnownErrors(req, res, type, req.body.product_name, error)
+      )
+        res.status(500).json(error);
+      console.log(`Error when updating ${type}: ${error.name}
+      ${error}`);
     });
 });
 
+// delete a product by its `id` value
 router.delete("/:id", async (req, res) => {
-  // delete a category by its `id` value
   try {
     const typeData = await TheType.destroy({
       where: { id: req.params.id },
@@ -128,7 +132,7 @@ router.delete("/:id", async (req, res) => {
       res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
     else res.status(200).json(typeData);
   } catch (error) {
-    if (!utils.handleKnownErrors(req, res, type, req.body.category_name, error))
+    if (!utils.handleKnownErrors(req, res, type, null, error))
       res.status(500).json(error);
     console.log(`Error when deleting ${type}: ${error.name}
       ${error}`);

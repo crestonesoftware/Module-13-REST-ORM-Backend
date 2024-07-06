@@ -1,5 +1,5 @@
 const UTILS = {
-  handleKnownErrors: function (req, res, type, key, error) {
+  handleKnownErrors: function (req, res, type, key = NULL, error) {
     console.log("***********************************************************");
     if ("SequelizeValidationError" == error.name) {
       res
