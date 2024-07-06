@@ -1,5 +1,6 @@
 const UTILS = {
-  handleKnownErrors: function (req, res, type, error) {
+  handleKnownErrors: function (req, res, type, key = NULL, error) {
+    console.log("***********************************************************");
     if ("SequelizeValidationError" == error.name) {
       res
         .status(400)
@@ -10,7 +11,7 @@ const UTILS = {
       res
         .status(400)
         .json(
-          `Error: when attempting to create ${type}: [${req.body.category_name}]. A ${type} with that ${error.errors[0].path} already exists`
+          `Error: when attempting to create ${type}: [${key}]. A ${type} with that ${error.errors[0].path} already exists`
         );
       return true;
     } else if (error.name == "SequelizeForeignKeyConstraintError") {

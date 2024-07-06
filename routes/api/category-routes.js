@@ -13,13 +13,14 @@ router.get("/", async (req, res) => {
     const typeData = await TheType.findAll();
     res.status(200).json(typeData);
   } catch (error) {
+    // the only likely error scenario here is a server problem
     console.log(`Error when getting ${typePlural}: ${error.name}`);
     res.status(500).json(error);
   }
 });
 
+// get a Category by its `id` value
 router.get("/:id", async (req, res) => {
-  // find one by its `id` value
   try {
     const typeData = await TheType.findByPk(req.params.id);
     if (!typeData)
@@ -34,21 +35,19 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// create a new category
 router.post("/", async (req, res) => {
-  // create a new category
-  const scope = "create new";
-  //res.json(`${req.method} ${scope} ${type}`);
   try {
-    const category = await Category.create({
+    const typeData = await TheType.create({
       category_name: req.body.category_name,
     });
-    if (!category)
+    if (!typeData)
       throw new error(
         `Failure when attempting to create ${type} [${req.body.category_name}]`
       );
-    else res.status(200).json(category);
+    else res.status(200).json(typeData);
   } catch (error) {
-    if (!utils.handleKnownErrors(req, res, type, error))
+    if (!utils.handleKnownErrors(req, res, type, req.body.category_name, error))
       //unknown error
       res
         .status(500)
@@ -58,30 +57,37 @@ router.post("/", async (req, res) => {
   }
 });
 
+// updates category_name for a category
 router.put("/:id", async (req, res) => {
-  // updates by `id` value
-  const category = await Category.update(
-    {
-      category_name: req.body.category_name,
-    },
-    {
-      where: { id: req.params.id },
-    }
-  );
-  res.status(200).json(category);
+  try {
+    const typeData = await TheType.update(
+      {
+        category_name: req.body.category_name,
+      },
+      {
+        where: { id: req.params.id },
+      }
+    );
+    res.status(200).json(typeData);
+  } catch (error) {
+    if (!utils.handleKnownErrors(req, res, type, req.body.category_name, error))
+      res.status(500).json(error);
+    console.log(`Error when updating ${type}: ${error.name}
+      ${error}`);
+  }
 });
 
+// delete a category by its `id` value
 router.delete("/:id", async (req, res) => {
-  // delete a category by its `id` value
   try {
-    const category = await Category.destroy({
+    const typeData = await TheType.destroy({
       where: { id: req.params.id },
     });
-    if (!category)
+    if (!typeData)
       res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
-    else res.status(200).json(category);
+    else res.status(200).json(typeData);
   } catch (error) {
-    if (!utils.handleKnownErrors(req, res, type, error))
+    if (!utils.handleKnownErrors(req, res, type, req.body.category_name, error))
       res.status(500).json(error);
     console.log(`Error when deleting ${type}: ${error.name}
       ${error}`);

@@ -1,57 +1,75 @@
 const router = require("express").Router();
+const utils = require("./utils.js");
 const { Product, Category, Tag, ProductTag } = require("../../models");
 
 // The `/api/products` endpoint
-const type = "products";
-// get all products
-router.get("/", (req, res) => {
-  // find all products
-  const scope = "all";
-  res.json(`${req.method} ${scope} ${type}`);
-  // be sure to include its associated Category and Tag data
+
+const type = "Product";
+const typePlural = "Products";
+const TheType = Product;
+
+// get all
+router.get("/", async (req, res) => {
+  try {
+    const typeData = await TheType.findAll();
+    res.status(200).json(typeData);
+  } catch (error) {
+    console.log(`Error when getting ${typePlural}: ${error.name}`);
+    res.status(500).json(error);
+  }
 });
 
-// get one product
-router.get("/:id", (req, res) => {
-  // find a single product by its `id`
-  const scope = "single";
-  res.json(`${req.method} ${scope} ${type}`);
-  // be sure to include its associated Category and Tag data
+// get one product by ID
+router.get("/:id", async (req, res) => {
+  // TODO be sure to include its associated Category and Tag data
+  try {
+    const typeData = await TheType.findByPk(req.params.id);
+    if (!typeData)
+      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+    else res.status(200).json(typeData);
+  } catch (error) {
+    console.log(`Error when getting ${typePlural}: ${error.name}
+      ${error}`);
+    res.status(500).json(error);
+  }
 });
 
 // create new product
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
       price: 200.00,
+      category_id: 1
       stock: 3,
       tagIds: [1, 2, 3, 4]
     }
   */
-  const scope = "create new";
-  res.json(`${req.method} ${scope} ${type}`);
-
-  Product.create(req.body)
-    .then((product) => {
-      // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (req.body.tagIds.length) {
-        const productTagIdArr = req.body.tagIds.map((tag_id) => {
-          return {
-            product_id: product.id,
-            tag_id,
-          };
-        });
-        return ProductTag.bulkCreate(productTagIdArr);
-      }
-      // if no product tags, just respond
+  try {
+    const product = await Product.create(req.body);
+    // no product tags. Just respond
+    if (!req.body.tagIds.length) {
       res.status(200).json(product);
-    })
-    .then((productTagIds) => res.status(200).json(productTagIds))
-    .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
+      return;
+    }
+    // product tags are provided. Create pairings to bulk create in the ProductTag model
+    const productTagIdArr = await req.body.tagIds.map((tag_id) => {
+      return {
+        product_id: product.id,
+        tag_id,
+      };
     });
+    const productTagIds = await ProductTag.bulkCreate(productTagIdArr);
+    res.status(200).json(productTagIds);
+  } catch (error) {
+    if (!utils.handleKnownErrors(req, res, type, req.body.product_name, error))
+      //unknown error
+      res
+        .status(500)
+        .json(
+          `Failure when attempting to create ${type} [${req.body.category_name}]: ${error.message} ${error}`
+        );
+  }
 });
 
 // update product
@@ -95,15 +113,30 @@ router.put("/:id", (req, res) => {
       return res.json(product);
     })
     .catch((err) => {
-      // console.log(err);
-      res.status(400).json(err);
+      if (
+        !utils.handleKnownErrors(req, res, type, req.body.product_name, error)
+      )
+        res.status(500).json(error);
+      console.log(`Error when updating ${type}: ${error.name}
+      ${error}`);
     });
 });
 
-router.delete("/:id", (req, res) => {
-  // delete one product by its `id` value
-  const scope = "single by id"; //
-  res.json(`${req.method} ${scope} ${type}`);
+// delete a product by its `id` value
+router.delete("/:id", async (req, res) => {
+  try {
+    const typeData = await TheType.destroy({
+      where: { id: req.params.id },
+    });
+    if (!typeData)
+      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+    else res.status(200).json(typeData);
+  } catch (error) {
+    if (!utils.handleKnownErrors(req, res, type, null, error))
+      res.status(500).json(error);
+    console.log(`Error when deleting ${type}: ${error.name}
+      ${error}`);
+  }
 });
 
 module.exports = router;
