@@ -2,12 +2,21 @@ const router = require("express").Router();
 const { Tag, Product, ProductTag } = require("../../models");
 
 // The `/api/tags` endpoint
-const type = "tags";
-router.get("/", (req, res) => {
-  // find all tags
-  // be sure to include its associated Product data
-  const scope = "all";
-  res.json(`${req.method} ${scope} ${type}`);
+const type = "Product";
+const typePlural = "Products";
+const TheType = Product;
+
+// find all tags
+
+// be sure to include its associated Product data
+router.get("/", async (req, res) => {
+  try {
+    const typeData = await TheType.findAll();
+    res.status(200).json(typeData);
+  } catch (error) {
+    console.log(`Error when getting ${typePlural}: ${error.name}`);
+    res.status(500).json(error);
+  }
 });
 
 router.get("/:id", (req, res) => {
