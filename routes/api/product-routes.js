@@ -75,8 +75,7 @@ router.post("/", async (req, res) => {
 // update product
 router.put("/:id", (req, res) => {
   // update product data
-  const scope = "update by id";
-  res.json(`${req.method} ${scope} ${type}`);
+
   Product.update(req.body, {
     where: {
       id: req.params.id,
