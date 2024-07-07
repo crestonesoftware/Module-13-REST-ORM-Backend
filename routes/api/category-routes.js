@@ -15,7 +15,7 @@ async function getProductsInCategory(categoryID) {
     where: {
       category_id: categoryID,
     },
-    attributes: { exclude: "category_id", include: "id" },
+    attributes: { include: "id" },
   });
 
   return productsInCategory;
