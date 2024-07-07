@@ -54,7 +54,7 @@ router.get("/:id", async (req, res) => {
     const typeData = await TheType.findByPk(req.params.id);
 
     if (!typeData)
-      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+      res.status(404).json(`No ${type} exists with id [${req.params.id}]`);
     else {
       await addAssociatedProducts(typeData);
 
@@ -116,7 +116,7 @@ router.delete("/:id", async (req, res) => {
       where: { id: req.params.id },
     });
     if (!typeData)
-      res.status(404).json(`No ${type} esists with id [${req.params.id}]`);
+      res.status(404).json(`No ${type} exists with id [${req.params.id}]`);
     else res.status(200).json(typeData);
   } catch (error) {
     if (!utils.handleKnownErrors(req, res, type, req.body.category_name, error))
