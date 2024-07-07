@@ -1,6 +1,11 @@
 const UTILS = {
+  // generically handles recognizable error conditions
   handleKnownErrors: function (req, res, type, key = null, error) {
-    console.log("***********************************************************");
+    //
+    let verb = "CREATE";
+    if (req.method == "PUT") verb = "UPDATE";
+    else if (req.method == "DELETE") verb = "DELETE";
+
     if ("SequelizeValidationError" == error.name) {
       res
         .status(400)
@@ -18,7 +23,7 @@ const UTILS = {
       res
         .status(400)
         .json(
-          `Foreign Key Constraint error when deleting ${type}: [${req.params.id}]. ${error.message}`
+          `Foreign Key Constraint error on attempt to ${verb} a ${type}: [${req.params.id}]. ${error.message}`
         );
       return true;
     }
